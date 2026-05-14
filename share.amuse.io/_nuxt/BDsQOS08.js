@@ -1,0 +1,1 @@
+import{_ as n,a as s}from"./oUl_EtPD.js";/* empty css        */import{_ as a}from"./DlAUqK2U.js";import{c,o as _,b as o,i as m}from"./entry-BD9afb2G.js";import"./DuqJqR-e.js";import"./CiV2_SfL.js";const i={},p={id:"smartlink",class:"smartlink"};function l(t,d){const e=n,r=s;return _(),c("div",p,[o(e),m(t.$slots,"default"),o(r)])}const $=a(i,[["render",l]]);export{$ as default};

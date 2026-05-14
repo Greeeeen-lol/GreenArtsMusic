@@ -1,0 +1,1 @@
+/* empty css        */import{_ as n}from"./DlAUqK2U.js";import{c as s,o as r,i as c}from"./entry-BD9afb2G.js";const a={name:"ButtonBase",emits:["click"]};function i(t,o,m,p,l,_){return r(),s("button",{class:"button-base",onClick:o[0]||(o[0]=e=>t.$emit("click",e))},[c(t.$slots,"default")])}const d=n(a,[["render",i]]);export{d as _};
