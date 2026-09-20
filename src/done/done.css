@@ -1,0 +1,160 @@
+:root {
+  color-scheme: dark;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app { position: fixed; inset: 0; }
+
+.done {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color: #c8cdd6;
+  --base: 3.4vmin;
+}
+
+/* Masked layer holding every hidden lyric fragment. Invisible except where
+   the light (a radial-gradient mask driven from JS) passes over it. */
+.done__fragments {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  will-change: mask-image, -webkit-mask-image;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  z-index: 0;
+}
+
+.done__fragment {
+  position: absolute;
+  /* left/top/transform/font-size are set inline per fragment. */
+  max-width: 92vw;
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+  color: #6b7280;
+  font-size: var(--base);
+  line-height: 1;
+}
+
+/* The one thing legible without the light. */
+.done__word {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  white-space: nowrap;
+  font-size: clamp(2.75rem, 13vmin, 6.5rem);
+  letter-spacing: 0.25em;
+  color: #eef0f4;
+  animation: done-flicker 7s ease-in-out infinite;
+}
+
+.done__letter {
+  display: inline-block;
+}
+
+.done__word.is-collapsing .done__letter {
+  animation-name: done-fall;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+  /* animation-delay / animation-duration / --rot are set inline per letter. */
+}
+
+@keyframes done-flicker {
+  0%, 44%, 100% { opacity: 1; }
+  46% { opacity: 0.55; }
+  48% { opacity: 0.92; }
+  70% { opacity: 1; }
+  72% { opacity: 0.7; }
+  74% { opacity: 1; }
+}
+
+@keyframes done-fall {
+  to {
+    transform: translateY(60vh) rotate(var(--rot, 0deg));
+    opacity: 0;
+  }
+}
+
+/* The answer prompt. Low on the page, below where the eye first lands.
+   `--kb` is the on-screen keyboard's inset, written from JS off
+   visualViewport, so the prompt stays above the keyboard instead of
+   underneath it. It is 0 whenever nothing is covering the viewport. */
+.done__prompt {
+  position: fixed;
+  left: 50%;
+  bottom: 6vh;
+  transform: translate(-50%, calc(-1 * var(--kb, 0px)));
+  z-index: 2;
+}
+
+/* The page's only affordance: a short, dim underline with a caret blinking
+   on it. It is NOT part of the masked fragment layer — it has to read as the
+   prompt, so it is legible with the light nowhere near it. */
+.done__field {
+  position: relative;
+  display: block;
+  width: min(66vw, 20ch);
+  border-bottom: 1px solid #454b55;
+}
+
+.done__input {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0.25em 0;
+  text-align: center;
+  font: inherit;
+  font-family: inherit;
+  font-size: 1rem;
+  color: #c8cdd6;
+  caret-color: #c8cdd6;
+}
+
+/* Rendered rather than relying on the native caret, which only exists while
+   the field is focused and which iOS may not paint at all. */
+.done__caret {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 1.15em;
+  transform: translate(-50%, -50%);
+  background: #aab1bc;
+  pointer-events: none;
+  animation: done-caret 1.1s step-end infinite;
+}
+
+/* Once there is text, the native caret takes over and ours would sit in the
+   middle of the word. */
+.done__prompt.is-typing .done__caret {
+  display: none;
+}
+
+@keyframes done-caret {
+  0%, 49.99% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .done__caret { animation: none; opacity: 1; }
+  .done__word { animation: none; }
+}
