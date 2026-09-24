@@ -79,7 +79,8 @@ export const PROPS: readonly PropSpec[] = [
   { id: 'chair-pulled-out', on: 'chairB', offset: [0, 0.45, 0], size: [0.42, 0.9, 0.42], verbs: ['look'], kind: 'staged' },
 
   // --- bed: a pillow, left where it landed ---
-  { id: 'pillow', on: 'bed', offset: [0, 0.645, -0.55], size: [0.5, 0.15, 0.35], verbs: ['look', 'take'], kind: 'staged' },
+  // Look only: it stays where it landed.
+  { id: 'pillow', on: 'bed', offset: [0, 0.645, -0.55], size: [0.5, 0.15, 0.35], verbs: ['look'], kind: 'staged' },
 
   // --- the floor: face down, exactly where it was dropped ---
   { id: 'photograph', on: 'room', offset: [1.0, 0.01, 2.6], size: [0.2, 0.02, 0.15], verbs: ['look', 'take'], kind: 'free' },
