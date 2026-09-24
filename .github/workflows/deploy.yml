@@ -24,7 +24,10 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run build
+      # The world build: chapter one and the hallway go live. The unreleased
+      # character textures and the ch0 test room audio are not part of it.
+      - run: npm run build:world
+      - run: rm -rf dist/textures dist/audio/ch0
       - run: cp dist/index.html dist/404.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
