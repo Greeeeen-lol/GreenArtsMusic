@@ -63,6 +63,17 @@ export function makeContext(
   };
 }
 
+/**
+ * A handoff that isn't the default fade through black: `cut` drops the
+ * curtain on the instant (on a beat), in `color` (a CSS colour; default
+ * black), and it lifts from there onto the next chapter.
+ */
+export interface ChapterExit {
+  to: string;
+  cut?: boolean;
+  color?: string;
+}
+
 export interface Chapter {
   id: number;
   load(ctx: GameContext): Promise<void>;
@@ -76,6 +87,13 @@ export interface Chapter {
    */
   fixedUpdate(dtSeconds: number, actions: ActionState): void;
   isComplete(): boolean;
+  /**
+   * Where this chapter wants to send the player, by id (or a ChapterExit,
+   * to say how), or null to stay. Polled every fixed step by `WorldFlow`
+   * (world/flow.ts), which owns the actual swap; a chapter only names the
+   * destination.
+   */
+  next?(): string | ChapterExit | null;
   dispose(): void;
   /** Root node this chapter added to the scene, for budget assertions. */
   root(): THREE.Object3D;

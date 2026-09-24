@@ -24,6 +24,13 @@ export interface SaveState {
   seenInteractPrompt: boolean;
   /** The DONE page's hidden answer has been solved. */
   doneSolved: boolean;
+  /**
+   * Ch1 — ids of the five ciphers already solved. Added without a version
+   * bump on purpose: bumping SAVE_VERSION discards the whole blob, which
+   * would wipe `doneSolved` and make every returning player solve the DONE
+   * page again. Older saves simply load with `[]`.
+   */
+  ch1Solved: string[];
 }
 
 export function defaultSave(): SaveState {
@@ -39,6 +46,7 @@ export function defaultSave(): SaveState {
     secretsFound: 0,
     seenInteractPrompt: false,
     doneSolved: false,
+    ch1Solved: [],
   };
 }
 
@@ -93,6 +101,9 @@ export function loadSave(storage?: Storage): SaveState {
     secretsFound: num(p.secretsFound, base.secretsFound),
     seenInteractPrompt: p.seenInteractPrompt === true,
     doneSolved: p.doneSolved === true,
+    ch1Solved: Array.isArray(p.ch1Solved)
+      ? p.ch1Solved.filter((x): x is string => typeof x === 'string')
+      : [],
   };
 }
 

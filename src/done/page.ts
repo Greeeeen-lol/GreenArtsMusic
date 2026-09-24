@@ -1,6 +1,6 @@
 import './done.css';
 import { FRAGMENTS, QUESTION, type Fragment } from './fragments';
-import { checkAnswer } from './gate';
+import { checkAnswer, isStartWord, START_WORD } from './gate';
 import { LIGHT_RADIUS_VMIN, toPercent, maskValue } from './lightfield';
 import { clampCenterX, clampCenterYAbove, keyboardInsetPx, MIN_PROMPT_GAP_PX } from './layout';
 import { collapsePlan, collapseTotalMs } from './collapse';
@@ -12,6 +12,13 @@ export interface DonePageOptions {
   audioSrc: string;
   /** Called once, after the collapse sequence finishes. */
   onSolved: () => void;
+  /**
+   * Called once, when the second word is accepted. `null` in a teaser build
+   * — the release gate. With `onStart: null` the page must give no sign the
+   * word means anything: no hint appears, and typing it is never
+   * acknowledged.
+   */
+  onStart: (() => void) | null;
 }
 
 /** The word that comes apart once the answer is accepted. */
@@ -35,6 +42,7 @@ export class DonePage {
 
   private readonly audioSrc: string;
   private readonly onSolvedCallback: () => void;
+  private readonly onStartCallback: (() => void) | null;
 
   private fragmentsEl!: HTMLDivElement;
   private wordEl!: HTMLDivElement;
@@ -44,6 +52,7 @@ export class DonePage {
   private formEl!: HTMLFormElement;
   private inputEl!: HTMLInputElement;
   private caretEl!: HTMLSpanElement;
+  private hintEl!: HTMLSpanElement;
   private audioEl!: HTMLAudioElement;
 
   // Pointer throttling: events write here; at most one mask update per frame
@@ -65,15 +74,23 @@ export class DonePage {
   private payoffStarted = false;
   private audioWarmed = false;
   private audioFailed = false;
+  private startShown = false;
+  private started = false;
 
   constructor(opts: DonePageOptions) {
     this.root = opts.root;
     this.audioSrc = opts.audioSrc;
     this.onSolvedCallback = opts.onSolved;
+    this.onStartCallback = opts.onStart;
   }
 
   get solved(): boolean {
     return this.isSolved;
+  }
+
+  /** True once the second word will be accepted and the hint is on screen. */
+  get startAvailable(): boolean {
+    return this.startShown;
   }
 
   /**
@@ -109,6 +126,15 @@ export class DonePage {
     // which is long before anyone can solve the page.
     this.audioEl.preload = 'none';
     this.audioEl.addEventListener('error', this.handleAudioError);
+    this.audioEl.addEventListener('ended', this.handleAudioEnded);
+    // A payoff that never plays at all (Low Power Mode, a blocked play(), a
+    // 404) must not strand a visitor who has already solved the page.
+    this.audioEl.addEventListener('error', this.handleAudioEnded);
+
+    // A returning visitor who solved this in an earlier session is let
+    // straight back in — they do not solve it twice, and they do not sit
+    // through the payoff again to be given the word.
+    if (this.onStartCallback && loadSave().doneSolved) this.revealStart();
 
     this.root.addEventListener('pointermove', this.handlePointerMove);
     this.root.addEventListener('pointerdown', this.handlePointerDown);
@@ -198,6 +224,18 @@ export class DonePage {
   }
 
   async typeAnswer(text: string): Promise<boolean> {
+    // The second word is checked first, but only counts once the answer has
+    // been solved. Typed by someone who has not solved it, this falls
+    // through to checkAnswer, fails, and does nothing — no error, no hint
+    // that the word meant anything. Being told the word must not be a way
+    // past the puzzle.
+    const onStart = this.onStartCallback;
+    if (onStart && this.startShown && !this.started && isStartWord(text)) {
+      this.started = true;
+      onStart();
+      return true;
+    }
+
     const ok = await checkAnswer(text);
     // checkAnswer crosses a real async boundary (crypto.subtle), so by the
     // time we're back here dispose() may already have torn the page down.
@@ -273,6 +311,8 @@ export class DonePage {
     }
 
     this.audioEl.removeEventListener('error', this.handleAudioError);
+    this.audioEl.removeEventListener('ended', this.handleAudioEnded);
+    this.audioEl.removeEventListener('error', this.handleAudioEnded);
     // Do NOT cut off a payoff that has already started. onSolved fires at
     // collapseTotalMs (1200ms) while the clip runs ~8.9s, and whoever handles
     // onSolved may well tear this page down to hand over to the world — the
@@ -331,6 +371,15 @@ export class DonePage {
   private buildPrompt(): HTMLFormElement {
     const form = document.createElement('form');
     form.className = 'done__prompt';
+
+    // Before the field, so it sits above the rule rather than under it.
+    // `aria-hidden` because the hint is decorative reinforcement of a word
+    // the input's own accessible name should carry; a screen reader
+    // announcing a bare "start" floating beside a text field is noise.
+    this.hintEl = document.createElement('span');
+    this.hintEl.className = 'done__hint';
+    this.hintEl.setAttribute('aria-hidden', 'true');
+    form.appendChild(this.hintEl);
 
     const field = document.createElement('div');
     field.className = 'done__field';
@@ -398,6 +447,11 @@ export class DonePage {
     if (this.audioWarmed) return;
     this.audioWarmed = true;
     try {
+      // `load()` alone is not enough: it re-runs resource selection, but a
+      // browser is free to keep deferring the actual fetch while preload is
+      // still 'none' (Chrome does). Lifting preload first is what turns the
+      // warm-up into a real download.
+      this.audioEl.preload = 'auto';
       this.audioEl.load();
     } catch {
       /* the payoff still tries to play on solve */
@@ -411,6 +465,19 @@ export class DonePage {
       `[done] the payoff audio failed to load: ${this.audioSrc}` +
         (code === undefined ? '' : ` (MediaError code ${code})`),
     );
+  };
+
+  private revealStart(): void {
+    // No callback means the world is withheld: there is nowhere to go, so
+    // there is nothing to hint at.
+    if (!this.onStartCallback || this.startShown) return;
+    this.startShown = true;
+    this.hintEl.textContent = START_WORD;
+    this.hintEl.classList.add('is-shown');
+  }
+
+  private readonly handleAudioEnded = (): void => {
+    this.revealStart();
   };
 
   private readonly handlePointerMove = (e: PointerEvent): void => {

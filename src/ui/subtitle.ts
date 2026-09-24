@@ -1,3 +1,10 @@
+// Owns its own CSS — nothing else imports style.css, and without this
+// import `.subtitle`/`.subtitle--visible` never load: the game's only line
+// of text would render unstyled (default black text) against the black
+// background, invisible in a real browser while every test here stays
+// green (happy-dom does no CSS layout at all).
+import '../style.css';
+
 export const SUBTITLE_MIN_MS = 1800;
 
 /**
@@ -10,6 +17,8 @@ export class Subtitle {
   private showing: string | null = null;
   private remainingMs = 0;
   private disposed = false;
+  /** Called as each line surfaces. The chapter hangs its text blip here. */
+  onLine: ((text: string) => void) | null = null;
 
   constructor(root: HTMLElement) {
     this.el = document.createElement('div');
@@ -35,6 +44,7 @@ export class Subtitle {
     this.remainingMs = next?.minMs ?? 0;
     this.el.textContent = next?.text ?? '';
     this.el.classList.toggle('subtitle--visible', next !== null);
+    if (next) this.onLine?.(next.text);
   }
 
   update(dtMs: number): void {

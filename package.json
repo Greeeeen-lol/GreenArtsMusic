@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node scripts/verify-teaser.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "make-test-audio": "node scripts/make-test-audio.mjs",
-    "answer-hash": "node scripts/answer-hash.mjs"
+    "answer-hash": "node scripts/answer-hash.mjs",
+    "build:world": "tsc --noEmit && vite build --mode world",
+    "verify-teaser": "node scripts/verify-teaser.mjs"
   },
   "dependencies": {
     "three": "^0.186.0"

@@ -1,0 +1,168 @@
+/* Owned by Examine and EndCard (src/ui/). Same register as the DONE page:
+   monospace, lowercase, grey on near-black, nothing louder than it must be. */
+
+.examine {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  pointer-events: auto;
+  background: rgba(2, 3, 5, 0.55);
+  animation: examine-in 300ms ease both;
+}
+
+.examine__panel {
+  box-sizing: border-box;
+  width: min(92ch, 100%);
+  max-height: 86vh;
+  overflow: auto;
+  padding: 22px 24px 18px;
+  background: rgba(8, 9, 12, 0.94);
+  border: 1px solid rgba(200, 205, 214, 0.12);
+  color: #c8cdd6;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: clamp(12px, 3.3vw, 15px);
+  line-height: 1.6;
+}
+
+.examine__title {
+  opacity: 0.55;
+  margin-bottom: 14px;
+  letter-spacing: 0.04em;
+}
+
+.examine__body {
+  margin: 0 0 18px;
+  font: inherit;
+  white-space: pre;
+  /* The laptop's hex lines are wider than a phone. Let them scroll rather
+     than wrap: a wrapped hex line reads as two lines of the puzzle. */
+  overflow-x: auto;
+}
+
+.examine__prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  border-top: 1px solid rgba(200, 205, 214, 0.1);
+  padding-top: 14px;
+}
+
+.examine__question { opacity: 0.7; }
+
+.examine__input {
+  flex: 1 1 12ch;
+  min-width: 10ch;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(200, 205, 214, 0.35);
+  color: #e4e8ee;
+  font: inherit;
+  caret-color: #e4e8ee;
+  padding: 2px 0;
+  outline: none;
+}
+
+.examine__input:focus { border-bottom-color: rgba(228, 232, 238, 0.7); }
+.examine__prompt.is-done .examine__input { display: none; }
+
+.examine__feedback {
+  min-height: 1.6em;
+  margin-top: 10px;
+  opacity: 0.8;
+}
+
+.examine__feedback.is-new { animation: examine-in 400ms ease both; }
+
+.examine__solved {
+  border-top: 1px solid rgba(200, 205, 214, 0.1);
+  padding-top: 14px;
+  opacity: 0.7;
+}
+
+.examine__close {
+  display: block;
+  margin: 14px 0 0 auto;
+  background: none;
+  border: 0;
+  color: #c8cdd6;
+  opacity: 0.45;
+  font: inherit;
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.examine__close:hover,
+.examine__close:focus-visible { opacity: 0.85; }
+
+.endcard {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  background: #000;
+  color: #c8cdd6;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: clamp(13px, 3.6vw, 17px);
+  text-align: center;
+  pointer-events: auto;
+  animation: examine-in 2.5s ease both;
+}
+
+.endcard__line {
+  margin: 0;
+  opacity: 0;
+  animation: endcard-line 1.8s ease forwards;
+}
+
+/* A hard cut: no fade on the card, the first line up in a blink. */
+.endcard--cut { animation: none; }
+.endcard--cut .endcard__line:first-child { animation-duration: 0.12s; }
+
+/* Going out the door: the screen whitening toward the drop. Opacity is
+   driven per frame by the chapter. */
+.whiteout {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes examine-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes endcard-line { from { opacity: 0; } to { opacity: 0.85; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .examine,
+  .examine__feedback.is-new,
+  .endcard { animation: none; }
+  .endcard__line { animation: none; opacity: 0.85; }
+}
+
+/* The crosshair: a 4px dot at screen centre. Owned by Ch1Chapter, styled
+   here with the other 2D surfaces. Dim by default, lit over anything that
+   answers the interact key. */
+.crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: #c8cdd6;
+  opacity: 0.35;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.crosshair--live { opacity: 0.9; transform: scale(1.5); }
+.crosshair--hidden { display: none; }

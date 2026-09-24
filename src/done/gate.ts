@@ -72,3 +72,14 @@ export async function checkAnswer(raw: string): Promise<boolean> {
   if (strong !== null) return ANSWER_HASHES.includes(strong);
   return ANSWER_HASHES_FALLBACK.includes(fnv1aHex(normalized));
 }
+
+/**
+ * The second word. Deliberately NOT hashed: it is a signpost, not a secret,
+ * and the page refuses it outright until the answer has been solved, so
+ * hiding it in a digest would protect nothing and cost readability.
+ */
+export const START_WORD = 'start';
+
+export function isStartWord(raw: string): boolean {
+  return normalizeAnswer(raw) === START_WORD;
+}

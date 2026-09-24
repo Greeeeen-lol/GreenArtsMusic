@@ -104,6 +104,22 @@ html, body {
   z-index: 2;
 }
 
+/* The second word, offered only after the payoff. A signpost, not an
+   instruction: no arrow, no "type this", no button. */
+.done__hint {
+  display: block;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a616c;
+  letter-spacing: 0.35em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1600ms ease-in;
+  margin-bottom: 0.9em;
+}
+
+.done__hint.is-shown { opacity: 1; }
+
 /* The page's only affordance: a short, dim underline with a caret blinking
    on it. It is NOT part of the masked fragment layer — it has to read as the
    prompt, so it is legible with the light nowhere near it. */
@@ -154,7 +170,12 @@ html, body {
   50%, 100% { opacity: 0; }
 }
 
+/* A blinking caret and a slow fade-in are the two pieces of motion here that
+   some people cannot tolerate. The caret stops blinking and stays on — still
+   the affordance, still visible. The hint drops its transition and simply
+   appears once shown, instead of fading in over 1600ms. The word's slow
+   flicker is atmosphere, not motion, and stays. */
 @media (prefers-reduced-motion: reduce) {
   .done__caret { animation: none; opacity: 1; }
-  .done__word { animation: none; }
+  .done__hint { transition: none; }
 }

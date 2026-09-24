@@ -102,6 +102,12 @@ export class Engine {
     this.scene.background = new THREE.Color(color);
   }
 
+  /** Exponential fog: thickens smoothly with distance, no hard far edge. */
+  setFogExp2(color: number, density: number): void {
+    this.scene.fog = new THREE.FogExp2(color, density);
+    this.scene.background = new THREE.Color(color);
+  }
+
   onFixed(cb: FixedCb): void { this.fixedCbs.push(cb); }
   onRender(cb: RenderCb): void { this.renderCbs.push(cb); }
 

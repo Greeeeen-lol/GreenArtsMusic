@@ -45,6 +45,12 @@ export class AudioDirector {
     this.ctx = ctx;
   }
 
+  /** The one AudioContext for the whole game. Chapters build their own
+   *  buffer-played sound (see core/score.ts) on it. */
+  get context(): AudioContext {
+    return this.ctx;
+  }
+
   addLayer(id: string, el: HTMLMediaElement, initialGain: number): LayerHandle {
     const gain = this.ctx.createGain();
     gain.gain.value = initialGain;
