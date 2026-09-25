@@ -25,10 +25,22 @@ export class PauseMenu {
   private opts: PauseMenuOptions;
   private el: HTMLDivElement | null = null;
   private openedAt = 0;
+  /** Phones have no Escape: a small pause button in the corner, shown only
+   *  on touch screens (the CSS decides) and only when the menu could open. */
+  private button: HTMLButtonElement;
 
   constructor(root: HTMLElement, opts: PauseMenuOptions) {
     this.root = root;
     this.opts = opts;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pause-button';
+    b.setAttribute('aria-label', 'pause');
+    b.setAttribute('data-no-lock', '');
+    b.addEventListener('click', () => this.open());
+    root.appendChild(b);
+    this.button = b;
+    this.sync();
     window.addEventListener('keydown', this.onKeyDown);
     document.addEventListener('pointerlockchange', this.onLockChange);
   }
@@ -83,15 +95,25 @@ export class PauseMenu {
     this.openedAt = performance.now();
     document.exitPointerLock?.();
     first.focus();
+    this.sync();
   }
 
   close(): void {
     this.el?.remove();
     this.el = null;
+    this.sync();
+  }
+
+  /** Hides the pause button while the menu is up or can't open. Called
+   *  every fixed step by the world loop. */
+  sync(): void {
+    const hide = this.el !== null || !this.opts.canOpen();
+    if (this.button.hidden !== hide) this.button.hidden = hide;
   }
 
   dispose(): void {
     this.close();
+    this.button.remove();
     window.removeEventListener('keydown', this.onKeyDown);
     document.removeEventListener('pointerlockchange', this.onLockChange);
   }

@@ -221,3 +221,44 @@
 @media (prefers-reduced-motion: reduce) {
   .pause { animation: none; }
 }
+
+/* Touch screens only: the way into the pause menu without an Escape key. */
+.pause-button {
+  display: none;
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 30;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: rgba(8, 9, 12, 0.45);
+  border: 1px solid rgba(200, 205, 214, 0.15);
+  border-radius: 50%;
+  color: #c8cdd6;
+  opacity: 0.6;
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Two bars, drawn rather than typed so no font can turn them into emoji. */
+.pause-button::before,
+.pause-button::after {
+  content: '';
+  position: absolute;
+  top: 15px;
+  width: 4px;
+  height: 14px;
+  background: currentColor;
+}
+.pause-button::before { left: 16px; }
+.pause-button::after { right: 16px; }
+
+.pause-button:active { opacity: 1; }
+
+@media (hover: none) and (pointer: coarse) {
+  .pause-button { display: block; }
+  .pause-button[hidden] { display: none; }
+  .pause__item { padding: 10px 0; }
+}

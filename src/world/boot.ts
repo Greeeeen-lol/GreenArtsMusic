@@ -160,6 +160,7 @@ export async function enterWorld(
 
   engine.onFixed((dtSeconds) => {
     const actions = input.update(dtSeconds * 1000);
+    pause.sync();
     if (pause.isOpen) return;
     flow.fixedUpdate(dtSeconds, actions);
   });
