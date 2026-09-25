@@ -24,6 +24,7 @@ import { makeContext, ChapterRouter, type Chapter } from '../core/chapter';
 import { Ch1Chapter } from '../chapters/ch1-denial/index';
 import { HallwayChapter } from '../chapters/hallway/index';
 import { WorldFlow } from './flow';
+import { PauseMenu } from '../ui/pause';
 
 export interface WorldHandle {
   dispose(): void;
@@ -125,6 +126,20 @@ export async function enterWorld(
   const flow = new WorldFlow(router, overlay, make);
   await flow.start(save.chapter >= 2 ? 'hallway' : 'ch1');
 
+  // Escape. While it's up the world holds still. "back to the hallway"
+  // only exists for a player who has already finished chapter one.
+  const pause = new PauseMenu(overlay, {
+    canOpen: () =>
+      !flow.busy &&
+      !overlay.querySelector('.examine, .endcard, .devpanel:not([hidden])'),
+    canGoHallway: () => save.chapter >= 2 && flow.currentId !== 'hallway',
+    onHallway: () => flow.goTo('hallway'),
+    onQuit: () => location.reload(),
+    relock: () => {
+      void (canvas.requestPointerLock?.() as Promise<void> | undefined)?.catch?.(() => {});
+    },
+  });
+
   // Dev server only (statically false in every build): a handle for
   // playtesting from the console — teleport, read the save, solve things —
   // and the F2 panel for ticking puzzles solved or unsolved.
@@ -145,6 +160,7 @@ export async function enterWorld(
 
   engine.onFixed((dtSeconds) => {
     const actions = input.update(dtSeconds * 1000);
+    if (pause.isOpen) return;
     flow.fixedUpdate(dtSeconds, actions);
   });
 
@@ -163,6 +179,7 @@ export async function enterWorld(
       disposed = true;
       unbindVisibility();
       devPanel?.dispose();
+      pause.dispose();
       engine.stop();
       flow.dispose();
       router.dispose();
