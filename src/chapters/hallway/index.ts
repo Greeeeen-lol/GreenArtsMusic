@@ -84,7 +84,7 @@ export class HallwayChapter implements Chapter {
     }
     this.register({ id: 'frost-door', object3D: hall.frost, verbs: ['look'], onVerb: () => ({ handled: true }) });
 
-    this.sound = new HallwaySound(ctx.audio.context);
+    this.sound = new HallwaySound(ctx.audio.context, ctx.audio.output);
     void this.sound.load();
 
     ctx.player.reset([...SPAWN.position], SPAWN.yaw);

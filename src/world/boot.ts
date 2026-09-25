@@ -25,6 +25,7 @@ import { Ch1Chapter } from '../chapters/ch1-denial/index';
 import { HallwayChapter } from '../chapters/hallway/index';
 import { WorldFlow } from './flow';
 import { PauseMenu } from '../ui/pause';
+import { loadSettings, writeSettings } from '../core/settings';
 
 export interface WorldHandle {
   dispose(): void;
@@ -128,6 +129,8 @@ export async function enterWorld(
 
   // Escape. While it's up the world holds still. "back to the hallway"
   // only exists for a player who has already finished chapter one.
+  let settings = loadSettings();
+  audio.setVolume(settings.volume);
   const pause = new PauseMenu(overlay, {
     canOpen: () =>
       !flow.busy &&
@@ -137,6 +140,12 @@ export async function enterWorld(
     onQuit: () => location.reload(),
     relock: () => {
       void (canvas.requestPointerLock?.() as Promise<void> | undefined)?.catch?.(() => {});
+    },
+    settings: () => settings,
+    onSettings: (s) => {
+      settings = s;
+      audio.setVolume(s.volume);
+      writeSettings(s);
     },
   });
 
@@ -159,7 +168,12 @@ export async function enterWorld(
   }
 
   engine.onFixed((dtSeconds) => {
-    const actions = input.update(dtSeconds * 1000);
+    const raw = input.update(dtSeconds * 1000);
+    const actions = {
+      ...raw,
+      lookX: raw.lookX * settings.lookSpeed,
+      lookY: raw.lookY * settings.lookSpeed * (settings.invertY ? -1 : 1),
+    };
     pause.sync();
     if (pause.isOpen) return;
     flow.fixedUpdate(dtSeconds, actions);

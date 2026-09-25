@@ -76,10 +76,10 @@ export class Ch1Sound {
   /** Out the door: the steps stay faded whatever the feet do. */
   private exiting = false;
 
-  constructor(ctx: AudioContext) {
+  constructor(ctx: AudioContext, destination: AudioNode = ctx.destination) {
     this.ctx = ctx;
     this.out = ctx.createGain();
-    this.out.connect(ctx.destination);
+    this.out.connect(destination);
     // A context made outside a gesture starts suspended. Any key or click
     // in the room is a gesture.
     window.addEventListener('pointerdown', this.wake);

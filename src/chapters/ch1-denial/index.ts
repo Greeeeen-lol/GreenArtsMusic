@@ -161,7 +161,7 @@ export class Ch1Chapter implements Chapter {
     extras.setPanes(this.puzzles.letters());
 
     // Not awaited: the room is ready before the music is.
-    this.sound = new Ch1Sound(ctx.audio.context);
+    this.sound = new Ch1Sound(ctx.audio.context, ctx.audio.output);
     this.sound.progress(this.puzzles.solvedIds().length, this.puzzles.allSolved());
     void this.sound.load();
     ctx.subtitle.onLine = () => this.sound?.blip();

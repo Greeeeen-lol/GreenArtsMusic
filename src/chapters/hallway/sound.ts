@@ -42,10 +42,10 @@ export class HallwaySound {
   private bedGain: GainNode | null = null;
   private exiting = false;
 
-  constructor(ctx: AudioContext) {
+  constructor(ctx: AudioContext, destination: AudioNode = ctx.destination) {
     this.ctx = ctx;
     this.out = ctx.createGain();
-    this.out.connect(ctx.destination);
+    this.out.connect(destination);
     this.live =
       typeof ctx.createOscillator === 'function' &&
       typeof ctx.createBuffer === 'function' &&

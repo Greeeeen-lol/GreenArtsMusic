@@ -112,7 +112,7 @@ export const PROPS: readonly PropSpec[] = [
   { id: 'radiator', on: 'radiator', offset: [0, 0, 0], size: [0.8, 0.5, 0.12], verbs: ['look'], kind: 'fixed' },
 
   // --- the floor, near the door ---
-  { id: 'boots', on: 'room', offset: [0.6, 0.075, 2.7], size: [0.2, 0.15, 0.35], verbs: ['look', 'take'], kind: 'free' },
+  { id: 'boots', on: 'room', offset: [0.6, 0.075, 2.7], size: [0.2, 0.15, 0.35], verbs: ['look'], kind: 'free' },
   { id: 'letter', on: 'room', offset: [-0.3, 0.01, 2.7], size: [0.15, 0.01, 0.1], verbs: ['look', 'take'], kind: 'free' },
 ];
 

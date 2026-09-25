@@ -40,9 +40,26 @@ export function needsReseek(
 export class AudioDirector {
   private ctx: AudioContext;
   private layers: LayerHandle[] = [];
+  private master: GainNode | null = null;
 
   constructor(ctx: AudioContext) {
     this.ctx = ctx;
+    // Everything the game plays goes through one gain: the volume setting.
+    // (Test stand-in contexts without createGain just play straight out.)
+    if (typeof ctx.createGain === 'function') {
+      this.master = ctx.createGain();
+      this.master.connect(ctx.destination);
+    }
+  }
+
+  /** Where all game sound connects — the master volume, not the speakers. */
+  get output(): AudioNode {
+    return this.master ?? this.ctx.destination;
+  }
+
+  /** 0-1. */
+  setVolume(v: number): void {
+    if (this.master) this.master.gain.value = Math.min(1, Math.max(0, v));
   }
 
   /** The one AudioContext for the whole game. Chapters build their own
@@ -54,7 +71,7 @@ export class AudioDirector {
   addLayer(id: string, el: HTMLMediaElement, initialGain: number): LayerHandle {
     const gain = this.ctx.createGain();
     gain.gain.value = initialGain;
-    gain.connect(this.ctx.destination);
+    gain.connect(this.output);
 
     const source = this.ctx.createMediaElementSource(el);
     source.connect(gain);
